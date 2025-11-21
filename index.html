@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading...</title>
+    <style>
+        /* Reset margins to ensure full screen */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Hide scrollbars on the parent */
+            background-color: #000; /* Dark background while loading */
+        }
+
+        /* Style the iframe to take up the full viewport */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Optional loading text styles */
+        #status {
+            color: white;
+            font-family: sans-serif;
+            text-align: center;
+            margin-top: 20%;
+            display: none; /* Hidden by default */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading message -->
+    <div id="status">Loading content...</div>
+
+    <!-- The Iframe -->
+    <iframe id="siteFrame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
+
+    <script>
+        // --- CONFIGURATION ---
+        // We put the URL directly here so it never fails to load
+        const targetUrl = "https://ea5d902f-ff5d-48d8-a170-769da7002c3d-00-1b73836s2ar0l.pike.replit.dev";
+        // ---------------------
+
+        const iframe = document.getElementById('siteFrame');
+        const status = document.getElementById('status');
+
+        if (targetUrl) {
+            const url = targetUrl.trim();
+            console.log("Loading URL:", url);
+            document.title = url; 
+            iframe.src = url;
+        } else {
+            status.style.display = 'block';
+            status.textContent = 'Error: No URL set in the configuration script.';
+        }
+    </script>
+</body>
+</html>
