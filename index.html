@@ -2,87 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loading...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>App</title>
+
+    <link rel="manifest" href="manifest.json">
     
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2065/2065064.png">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="My Portal">
+    
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
-        /* 1. Full Screen Layout */
+        /* Reset to ensure full screen black app feel */
         body, html {
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            overflow: hidden; background-color: #000;
-            font-family: sans-serif;
+            margin: 0; padding: 0;
+            height: 100%; width: 100%;
+            background-color: #000;
+            overflow: hidden;
+            /* Prevents the rubber-band bounce effect on iOS */
+            overscroll-behavior: none; 
         }
 
         iframe {
-            width: 100%; height: 100%; border: none; display: block;
+            width: 100%; height: 100%;
+            border: none; display: block;
+            /* Safe area padding for iPhone Notch/Dynamic Island */
+            padding-top: env(safe-area-inset-top);
+            box-sizing: border-box;
         }
 
-        /* 2. Loading Text */
         #status {
-            color: #888;
-            text-align: center;
-            margin-top: 20%;
-            font-size: 16px;
-            letter-spacing: 1px;
+            position: absolute; top: 40%; width: 100%;
+            text-align: center; color: #444;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 14px;
+            animation: pulse 1.5s infinite;
         }
-        
-        /* 3. Refresh Button (Bottom Right) - Just in case */
-        #refreshBtn {
-            position: absolute; bottom: 20px; right: 20px;
-            background: rgba(255,255,255,0.1); color: white;
-            padding: 10px; border-radius: 50%; cursor: pointer;
-            width: 20px; height: 20px; text-align: center;
-            line-height: 20px; font-size: 12px; user-select: none;
-            display: none; /* Hidden unless mouse moves */
-        }
-        body:hover #refreshBtn { display: block; }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-    <div id="status">Fetching link from GitHub...</div>
+    <div id="status">Connecting...</div>
     
-    <iframe id="siteFrame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
-
-    <div id="refreshBtn" onclick="fetchLink()" title="Reload Link">↻</div>
+    <iframe id="siteFrame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals"></iframe>
 
     <script>
         // --- CONFIGURATION ---
-        // This points to the RAW version of your text file
         const rawTxtUrl = "https://raw.githubusercontent.com/smalohola/link/main/link.txt";
         // ---------------------
 
         const iframe = document.getElementById('siteFrame');
         const status = document.getElementById('status');
 
-        async function fetchLink() {
+        async function fetchAndLoad() {
             try {
-                // We add '?t=' + Date.now() to force the browser to get a NEW copy
-                // instead of using an old cached version. This makes updates instant.
+                // '?t=' + Date.now() forces the browser to ignore cache and get the NEW link every time
                 const response = await fetch(rawTxtUrl + "?t=" + Date.now());
                 
-                if (!response.ok) throw new Error("Could not find link.txt");
+                if (!response.ok) throw new Error("Connection failed");
 
                 const text = await response.text();
-                const targetUrl = text.trim(); // Removes any spaces/newlines
+                const targetUrl = text.trim();
 
                 if (targetUrl.startsWith("http")) {
-                    console.log("Loading:", targetUrl);
-                    status.style.display = 'none';
-                    document.title = targetUrl;
+                    console.log("Navigating to:", targetUrl);
                     iframe.src = targetUrl;
-                } else {
-                    status.innerText = "Error: The text file does not contain a valid link.";
+                    // Hide loading text once iframe loads
+                    iframe.onload = () => { status.style.display = 'none'; };
                 }
 
             } catch (error) {
                 console.error(error);
-                status.innerText = "Error loading link. Check console.";
+                status.innerText = "Connection Error. Check Link.";
             }
         }
 
-        // Run on load
-        fetchLink();
+        // 1. Load on startup
+        fetchAndLoad();
+
+        // 2. Smart Refresh: If user minimizes app and comes back, check for new link
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                fetchAndLoad();
+            }
+        });
     </script>
 </body>
 </html>
