@@ -4,73 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Loading...</title>
-
-    <!-- PWA / Manifest Support -->
-    <link rel="manifest" href="manifest.json">
-
-    <!-- iOS Specific Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Web App">
     
-    <!-- iOS Icon (You should replace the href with your own icon file) -->
-    <link rel="apple-touch-icon" href="https://via.placeholder.com/192.png?text=App+Icon">
-
     <style>
-        /* Reset margins to ensure full screen */
+        /* 1. Full Screen Layout */
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden; /* Hide scrollbars on the parent */
-            background-color: #000; /* Dark background while loading */
-        }
-
-        /* Style the iframe to take up the full viewport */
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
-
-        /* Optional loading text styles */
-        #status {
-            color: white;
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            overflow: hidden; background-color: #000;
             font-family: sans-serif;
+        }
+
+        iframe {
+            width: 100%; height: 100%; border: none; display: block;
+        }
+
+        /* 2. Loading Text */
+        #status {
+            color: #888;
             text-align: center;
             margin-top: 20%;
-            display: none; /* Hidden by default */
+            font-size: 16px;
+            letter-spacing: 1px;
         }
+        
+        /* 3. Refresh Button (Bottom Right) - Just in case */
+        #refreshBtn {
+            position: absolute; bottom: 20px; right: 20px;
+            background: rgba(255,255,255,0.1); color: white;
+            padding: 10px; border-radius: 50%; cursor: pointer;
+            width: 20px; height: 20px; text-align: center;
+            line-height: 20px; font-size: 12px; user-select: none;
+            display: none; /* Hidden unless mouse moves */
+        }
+        body:hover #refreshBtn { display: block; }
     </style>
 </head>
 <body>
 
-    <!-- Loading message -->
-    <div id="status">Loading content...</div>
-
-    <!-- The Iframe -->
+    <div id="status">Fetching link from GitHub...</div>
+    
     <iframe id="siteFrame" allowfullscreen sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
+
+    <div id="refreshBtn" onclick="fetchLink()" title="Reload Link">↻</div>
 
     <script>
         // --- CONFIGURATION ---
-        // We put the URL directly here so it never fails to load
-        const targetUrl = "https://ea5d902f-ff5d-48d8-a170-769da7002c3d-00-1b73836s2ar0l.pike.replit.dev";
+        // This points to the RAW version of your text file
+        const rawTxtUrl = "https://raw.githubusercontent.com/smalohola/link/main/link.txt";
         // ---------------------
 
         const iframe = document.getElementById('siteFrame');
         const status = document.getElementById('status');
 
-        if (targetUrl) {
-            const url = targetUrl.trim();
-            console.log("Loading URL:", url);
-            document.title = url; 
-            iframe.src = url;
-        } else {
-            status.style.display = 'block';
-            status.textContent = 'Error: No URL set in the configuration script.';
+        async function fetchLink() {
+            try {
+                // We add '?t=' + Date.now() to force the browser to get a NEW copy
+                // instead of using an old cached version. This makes updates instant.
+                const response = await fetch(rawTxtUrl + "?t=" + Date.now());
+                
+                if (!response.ok) throw new Error("Could not find link.txt");
+
+                const text = await response.text();
+                const targetUrl = text.trim(); // Removes any spaces/newlines
+
+                if (targetUrl.startsWith("http")) {
+                    console.log("Loading:", targetUrl);
+                    status.style.display = 'none';
+                    document.title = targetUrl;
+                    iframe.src = targetUrl;
+                } else {
+                    status.innerText = "Error: The text file does not contain a valid link.";
+                }
+
+            } catch (error) {
+                console.error(error);
+                status.innerText = "Error loading link. Check console.";
+            }
         }
+
+        // Run on load
+        fetchLink();
     </script>
 </body>
 </html>
