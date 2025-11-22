@@ -1,6 +1,6 @@
 {
-  "name": "My Web App",
-  "short_name": "Web App",
+  "name": "Secure Portal",
+  "short_name": "Portal",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
@@ -8,12 +8,12 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://via.placeholder.com/192.png?text=App+Icon",
+      "src": "https://cdn-icons-png.flaticon.com/512/2065/2065064.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://via.placeholder.com/512.png?text=App+Icon",
+      "src": "https://cdn-icons-png.flaticon.com/512/2065/2065064.png",
       "sizes": "512x512",
       "type": "image/png"
     }
